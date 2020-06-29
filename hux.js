@@ -15,7 +15,7 @@ function createSubscription(storeName, subId, data, update) {
   subscriptions[storeName][subId] = () => {
     const prevState = dock[storeName].current.state;
     const keys = Object.keys(data);
-    while (keys) {
+    while (keys.length) {
       const key = keys.pop();
       if (prevState[key] !== data[key]) update();
     }
@@ -57,10 +57,18 @@ function share(storeName) {
   }
 }
 
+function run(subsObj) {
+  const subsKeys = Object.keys(subsObj);
+  while(subsKeys.length) {
+    const key = subsKeys.shift();
+    subsObj[key]();
+  }
+}
+
 function dispatchObserver(storeName, dispatch) {
   return (action) => {
     dispatch(action);
-    subscriptions[storeName]
+    run(subscriptions[storeName]);
   }
 }
 
