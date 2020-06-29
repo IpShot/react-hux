@@ -1,9 +1,10 @@
-import { useHux, subscribe, Provider } from '../hux';
+import { useHux } from '../hux';
 
 const STORE_NAME = 'main_page';
 const initialState = {
   header: 'Header',
   body: 'Body',
+  title: 'Title',
 }
 const reducer = (state, action) => {
   switch (action.type) {
@@ -22,32 +23,35 @@ const reducer = (state, action) => {
   }
 }
 
-function MainPage() {
-  const [state, dispatch] = useHux(STORE_NAME, reducer, initialState);
-  const customData = React.useMemo(() => ({
+export default function MainPage() {
+  const { state, dispatch, share } = useHux(STORE_NAME, reducer, initialState);
+  const actions = React.useMemo(() => ({
     loadBody: async () => {
       dispatch({
         type: 'UPDATE_BODY',
         payload: { loading: true }
       })
-      const body = await fetch('/body');
-      dispatch({
-        type: 'UPDATE_BODY',
-        payload: { body, loading: false }
-      })
+      setTimeout(() =>
+        dispatch({
+          type: 'UPDATE_BODY',
+          payload: { body: 'New Body', loading: false }
+        })
+      , 2000);
     },
   }), []);
 
+  share({ actions });
+
   return (
-    <Provider store={STORE_NAME} value={[state, dispatch, customData]}>
+    <>
       <Header />
       <Body />
-    </Provider>
+    </>
   )
 }
 
 function Header() {
-  const [state, dispatch] = useHux(STORE_NAME);
+  const { state, dispatch, subscribe } = useHux(STORE_NAME);
   const { header, title } = state;
 
   subscribe({ header, title });
@@ -63,8 +67,9 @@ function Header() {
 }
 
 function Body() {
-  const [state, dispatch, customData] = useHux(STORE_NAME);
+  const { state, subscribe, shared } = useHux(STORE_NAME);
   const { body, loading } = state;
+  const { actions } = shared;
 
   subscribe({ body, loading });
 
@@ -72,7 +77,7 @@ function Body() {
     <div>
       {loading && <span>Loading...</span>}
       {!loading && <span>{body}</span>}
-      <button onClick={() => customData.loadBody()}>
+      <button onClick={() => actions.loadBody()}>
         Load Body
       </button>
     </div>
