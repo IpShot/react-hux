@@ -1,4 +1,4 @@
-import { useHux, reRenderIfChange } from '../hux';
+import { useHux, reRenderIfChange, Provider } from '../hux';
 
 const STORE_NAME = 'main_page';
 const initialState = {
