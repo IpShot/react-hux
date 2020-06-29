@@ -1,4 +1,4 @@
-import { useHux, reRenderIfChange, Provider } from '../hux';
+import { useHux, subscribe, Provider } from '../hux';
 
 const STORE_NAME = 'main_page';
 const initialState = {
@@ -50,7 +50,7 @@ function Header() {
   const [state, dispatch] = useHux(STORE_NAME);
   const { header, title } = state;
 
-  reRenderIfChange({ header, title });
+  subscribe({ header, title });
 
   return (
     <div>
@@ -66,7 +66,7 @@ function Body() {
   const [state, dispatch, customData] = useHux(STORE_NAME);
   const { body, loading } = state;
 
-  reRenderIfChange({ body, loading });
+  subscribe({ body, loading });
 
   return (
     <div>
