@@ -1,30 +1,82 @@
-import { useReducer, useRef } from 'react';
+import { useReducer, useRef, useMemo, useEffect } from 'react';
+import shallowEqual from './shallowEqual';
 
+let counter = 0;
+const genId = () => counter++;
 const dock = {};
+const subscriptions = {};
 
 function getHux(storeName, reducer) {
   // ? mergeReducers(storeName, reducer);
   return dock[storeName].current;
 }
 
-function subscribe(storeName, data) {
-
+function createSubscription(storeName, subId, data, update) {
+  subscriptions[storeName][subId] = () => {
+    const prevState = dock[storeName].current.state;
+    const keys = Object.keys(data);
+    while (keys) {
+      const key = keys.pop();
+      if (prevState[key] !== data[key]) update();
+    }
+  }
 }
 
-function share(storeName, data) {
-  dock[storeName].current.shared = {
-    ...data,
-    ...dock[storeName].current.shared,
+function unsubscribe(storeName, id) {
+  if (subscriptions[storeName]) {
+    delete subscriptions[storeName][id];
+  }
+}
+
+function subscribe(storeName) {
+  return (data) => {
+    const subId = useRef(genId());
+    const dataRef = useRef(data);
+    const [_, forceRender] = useReducer(s => s + 1, 0);
+    if (!shallowEqual(dataRef.current, data)) {
+      dataRef.current = data;
+    }
+    useEffect(() => {
+      createSubscription(
+        storeName,
+        subId.current,
+        dataRef.current,
+        forceRender
+      );
+      return () => unsubscribe(storeName, subId.current);
+    }, [dataRef.current]);
+  }
+}
+
+function share(storeName) {
+  return (data) => {
+    dock[storeName].current.shared = {
+      ...data,
+      ...dock[storeName].current.shared,
+    }
+  }
+}
+
+function dispatchObserver(storeName, dispatch) {
+  return (action) => {
+    dispatch(action);
+    subscriptions[storeName]
   }
 }
 
 function createStore(storeName, reducer, initialState) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  if (dock[storeName]) {
+    dock[storeName].current.state = state;
+  }
+  useMemo(() => {
+    subscriptions[storeName] = {};
+  }, []);
   dock[storeName] = useRef({
     state,
-    dispatch,
-    share: share.bind(null, storeName),
-    subscribe: subscribe.bind(null, storeName),
+    dispatch: dispatchObserver(storeName, dispatch),
+    share: share(storeName),
+    subscribe: subscribe(storeName),
   });
   return dock[storeName];
 }
