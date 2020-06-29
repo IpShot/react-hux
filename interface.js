@@ -39,7 +39,7 @@ function MainPage() {
   }), []);
 
   return (
-    <Provider value={[state, dispatch, customData]}>
+    <Provider store={STORE_NAME} value={[state, dispatch, customData]}>
       <Header />
       <Body />
     </Provider>
