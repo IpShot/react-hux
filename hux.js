@@ -23,7 +23,7 @@ function createSubscription(storeName, subId, data, update) {
 }
 
 function unsubscribe(storeName, id) {
-  if (subscriptions[storeName]) {
+  if (subscriptions[storeName] && subscriptions[storeName][id]) {
     delete subscriptions[storeName][id];
   }
 }
