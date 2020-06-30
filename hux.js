@@ -6,7 +6,7 @@ const genId = () => counter++;
 const dock = {};
 const subscriptions = {};
 
-function getHux(storeName, reducer) {
+function getHux(storeName) {
   return dock[storeName].current;
 }
 
