@@ -6,10 +6,6 @@ const genId = () => counter++;
 const dock = {};
 const subscriptions = {};
 
-function getHux(storeName) {
-  return dock[storeName].current;
-}
-
 function createSubscription(storeName, subId, data, update) {
   subscriptions[storeName][subId] = () => {
     const prevState = dock[storeName].current.state;
@@ -82,6 +78,10 @@ function createStore(storeName, reducer, initialState) {
   return dock[storeName];
 }
 
+function getStore(storeName) {
+  return dock[storeName].current;
+}
+
 export function useNewHux(storeName, reducer, initialState) {
   if (!storeName || !reducer || !initialState) {
     throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
@@ -94,5 +94,5 @@ export function useHux(storeName) {
   if (!dock[storeName]) {
     throw new Error(`The store "${storeName}" doesn't exist. You have to create it with useNewHux(...) before trying to use.`);
   }
-  return getHux(storeName);
+  return getStore(storeName);
 }
