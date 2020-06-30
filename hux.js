@@ -8,7 +8,7 @@ const subscriptions = {};
 
 function createSubscription(storeName, subId, data, update) {
   subscriptions[storeName][subId] = () => {
-    const prevState = dock[storeName].current.state;
+    const prevState = dock[storeName].state;
     const keys = Object.keys(data);
     keys.forEach(key => {
       if (prevState[key] !== data[key]) update();
@@ -44,8 +44,8 @@ function subscribe(storeName) {
 
 function share(storeName) {
   return (data) => {
-    dock[storeName].current.shared = {
-      ...dock[storeName].current.shared,
+    dock[storeName].shared = {
+      ...dock[storeName].shared,
       ...data,
     }
   }
@@ -59,7 +59,15 @@ function runSubscriptions(subsObj) {
 function createStore(storeName, reducer, initialState) {
   const [state, dispatch] = useReducer(reducer, initialState);
   if (dock[storeName]) {
-    dock[storeName].current.state = state;
+    dock[storeName].state = state;
+  }
+  if (!dock[storeName]) {
+    dock[storeName] = {
+      state,
+      dispatch,
+      share: share(storeName),
+      subscribe: subscribe(storeName),
+    }
   }
   useMemo(() => {
     subscriptions[storeName] = {};
@@ -69,17 +77,11 @@ function createStore(storeName, reducer, initialState) {
       runSubscriptions(subscriptions[storeName]);
     }
   });
-  dock[storeName] = useRef({
-    state,
-    dispatch,
-    share: share(storeName),
-    subscribe: subscribe(storeName),
-  });
   return dock[storeName];
 }
 
 function getStore(storeName) {
-  return dock[storeName].current;
+  return dock[storeName];
 }
 
 export function useNewHux(storeName, reducer, initialState) {
@@ -87,7 +89,7 @@ export function useNewHux(storeName, reducer, initialState) {
     throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
   }
   dock[storeName] = createStore(storeName, reducer, initialState);
-  return dock[storeName].current;
+  return dock[storeName];
 }
 
 export function useHux(storeName) {
