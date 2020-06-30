@@ -51,7 +51,7 @@ function share(storeName) {
   }
 }
 
-function run(subsObj) {
+function runSubscriptions(subsObj) {
   const subsKeys = Object.keys(subsObj);
   subsKeys.forEach(key => subsObj[key]());
 }
@@ -66,7 +66,7 @@ function createStore(storeName, reducer, initialState) {
   }, []);
   useEffect(() => {
     if (dock[storeName]) {
-      run(subscriptions[storeName]);
+      runSubscriptions(subscriptions[storeName]);
     }
   });
   dock[storeName] = useRef({
