@@ -50,8 +50,8 @@ function subscribe(storeName) {
 function share(storeName) {
   return (data) => {
     dock[storeName].current.shared = {
-      ...data,
       ...dock[storeName].current.shared,
+      ...data,
     }
   }
 }
