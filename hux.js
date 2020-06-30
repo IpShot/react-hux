@@ -66,13 +66,6 @@ function run(subsObj) {
   }
 }
 
-function dispatchObserver(storeName, dispatch) {
-  return (action) => {
-    dispatch(action);
-    run(subscriptions[storeName]);
-  }
-}
-
 function createStore(storeName, reducer, initialState) {
   const [state, dispatch] = useReducer(reducer, initialState);
   if (dock[storeName]) {
@@ -88,7 +81,7 @@ function createStore(storeName, reducer, initialState) {
   });
   dock[storeName] = useRef({
     state,
-    dispatch, //dispatchObserver(storeName, dispatch),
+    dispatch,
     share: share(storeName),
     subscribe: subscribe(storeName),
   });
