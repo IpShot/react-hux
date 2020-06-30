@@ -6,6 +6,11 @@ const genId = () => counter++;
 const dock = {};
 const subscriptions = {};
 
+function runSubscriptions(subsObj) {
+  const subsKeys = Object.keys(subsObj);
+  subsKeys.forEach(key => subsObj[key]());
+}
+
 function createSubscription(storeName, subId, data, update) {
   subscriptions[storeName][subId] = () => {
     const prevState = dock[storeName].state;
@@ -49,11 +54,6 @@ function share(storeName) {
       ...data,
     }
   }
-}
-
-function runSubscriptions(subsObj) {
-  const subsKeys = Object.keys(subsObj);
-  subsKeys.forEach(key => subsObj[key]());
 }
 
 function createStore(storeName, reducer, initialState, options = { cache: true }) {
