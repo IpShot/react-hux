@@ -13,7 +13,6 @@ function getHux(storeName, reducer) {
 
 function createSubscription(storeName, subId, data, update) {
   subscriptions[storeName][subId] = () => {
-    console.log(`Run subscription ${subId}`);
     const prevState = dock[storeName].current.state;
     const keys = Object.keys(data);
     while (keys.length) {
