@@ -7,7 +7,6 @@ const dock = {};
 const subscriptions = {};
 
 function getHux(storeName, reducer) {
-  // ? mergeReducers(storeName, reducer);
   return dock[storeName].current;
 }
 
@@ -83,18 +82,17 @@ function createStore(storeName, reducer, initialState) {
   return dock[storeName];
 }
 
-function createHux(storeName, reducer, initialState) {
+export function useNewHux(storeName, reducer, initialState) {
+  if (!storeName || !reducer || !initialState) {
+    throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
+  }
   dock[storeName] = createStore(storeName, reducer, initialState);
   return dock[storeName].current;
 }
 
-export function useHux(storeName, reducer, initialState) {
-  if (!storeName) throw new Error('You have to specify a store name.');
-  if (initialState) {
-    return createHux(storeName, reducer, initialState);
-  } else if (!dock[storeName]) {
-    throw new Error(`This is the ${storeName} init, you have to specify reducer and initial state.`);
-  } else {
-    return getHux(storeName, reducer);
+export function useHux(storeName) {
+  if (!dock[storeName]) {
+    throw new Error(`The store "${storeName}" doesn't exist. You have to create it with createHux(...) before trying to use.`);
   }
+  return getHux(storeName);
 }

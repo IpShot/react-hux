@@ -1,4 +1,4 @@
-import { useHux } from '../hux';
+import { useNewHux, useHux } from '../hux';
 
 const STORE_NAME = 'main_page';
 const initialState = {
@@ -24,7 +24,7 @@ const reducer = (state, action) => {
 }
 
 export default function MainPage() {
-  const { state, dispatch, share } = useHux(STORE_NAME, reducer, initialState);
+  const { state, dispatch, share } = useNewHux(STORE_NAME, reducer, initialState);
   const actions = React.useMemo(() => ({
     loadBody: async () => {
       dispatch({
