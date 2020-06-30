@@ -92,7 +92,7 @@ export function useNewHux(storeName, reducer, initialState) {
 
 export function useHux(storeName) {
   if (!dock[storeName]) {
-    throw new Error(`The store "${storeName}" doesn't exist. You have to create it with createHux(...) before trying to use.`);
+    throw new Error(`The store "${storeName}" doesn't exist. You have to create it with useNewHux(...) before trying to use.`);
   }
   return getHux(storeName);
 }
