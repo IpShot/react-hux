@@ -57,7 +57,7 @@ function runSubscriptions(subsObj) {
 }
 
 function createStore(storeName, reducer, initialState) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, dock[storeName]?.state || initialState);
   if (dock[storeName]) {
     dock[storeName].state = state;
   }
