@@ -50,7 +50,7 @@ export default function MainPage() {
   )
 }
 
-function Header() {
+const Header = React.memo(function() {
   const { state, dispatch, subscribe } = useHux(STORE_NAME);
   const { header, title } = state;
 
@@ -59,14 +59,14 @@ function Header() {
   return (
     <div>
       <span>{header}</span>
-      <button onClick={() => dispatch('UPDATE_HEADER', title)}>
+      <button onClick={() => dispatch({ type: 'UPDATE_HEADER', payload: title })}>
         Update Header
       </button>
     </div>
   );
-}
+});
 
-function Body() {
+const Body = React.memo(function() {
   const { state, subscribe, shared } = useHux(STORE_NAME);
   const { body, loading } = state;
   const { actions } = shared;
@@ -82,4 +82,4 @@ function Body() {
       </button>
     </div>
   );
-}
+});
