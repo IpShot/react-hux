@@ -66,7 +66,7 @@ function createStore(storeName, reducer, initialState, options = { cache: true }
       state,
       dispatch,
       share: share(storeName),
-      subscribe: subscribe(storeName),
+      useSubscribe: subscribe(storeName),
     }
   }
   useMemo(() => {
