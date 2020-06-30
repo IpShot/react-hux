@@ -7,6 +7,7 @@ const dock = {};
 const subscriptions = {};
 
 function runSubscriptions(subsObj) {
+  if (!subsObj) return;
   const subsKeys = Object.keys(subsObj);
   subsKeys.forEach(key => subsObj[key]());
 }
