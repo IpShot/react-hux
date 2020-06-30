@@ -84,7 +84,7 @@ function getStore(storeName) {
   return dock[storeName];
 }
 
-export function useNewHux(storeName, reducer, initialState) {
+export function useNewStore(storeName, reducer, initialState) {
   if (!storeName || !reducer || !initialState) {
     throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
   }
@@ -92,7 +92,7 @@ export function useNewHux(storeName, reducer, initialState) {
   return dock[storeName];
 }
 
-export function useHux(storeName) {
+export function useStore(storeName) {
   if (!dock[storeName]) {
     throw new Error(`The store "${storeName}" doesn't exist. You have to create it with useNewHux(...) before trying to use.`);
   }
