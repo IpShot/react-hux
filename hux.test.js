@@ -1,4 +1,4 @@
-import { memo, useCallback, useReducer, useLayoutEffect } from 'react';
+import { memo, useEffect, useLayoutEffect } from 'react';
 import { renderHook, act, cleanup } from '@testing-library/react-hooks';
 import * as rtl from '@testing-library/react';
 import { useNewStore, useStore } from './hux';
@@ -253,6 +253,17 @@ describe('Hux', () => {
       expect(store.state.value).toBe('Bye Hux!')
       expect(childStore.state.value).toBe('Bye Hux!')
     })
+    it('should throw an error if store name is missing', () => {
+      const { result } = renderHook(() => useStore())
+      expect(result.error).not.toBe(undefined)
+    })
+    it('should throw an error if store wasn\'t created', () => {
+      const { result } = renderHook(
+        () => useNewStore(STORE_NAME, reducer, initialState)
+      )
+      const { result: childResult } = renderHook(() => useStore())
+      expect(childResult.error).not.toBe(undefined)
+    })
   })
   describe('useSubscribe', () => {
     it('should call render of memoized component on dispatch value subscribed to', () => {
@@ -286,6 +297,71 @@ describe('Hux', () => {
       })
       expect(parentRenders).toBe(2)
       expect(childRenders).toBe(1)
+    })
+    it('should call render on dispatch inside useEffect', () => {
+      const renders = [];
+      Child = memo(() => {
+        childStore = useStore(STORE_NAME)
+        const { value, loading } = childStore.state
+        childStore.useSubscribe({ value })
+
+        useEffect(() => {
+          childStore.dispatch({
+            type: 'UPDATE_VALUE',
+            payload: 'Bye Hux!'
+          })
+        }, [])
+        childRenders += 1
+        renders.push(value)
+        return <span />
+      })
+      rtl.render(<Parent />)
+      expect(childRenders).toBe(2)
+      expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
+    })
+    it('should call render on dispatch inside useLayoutEffect', () => {
+      const renders = [];
+      Child = memo(() => {
+        childStore = useStore(STORE_NAME)
+        const { value, loading } = childStore.state
+        childStore.useSubscribe({ value })
+
+        useLayoutEffect(() => {
+          childStore.dispatch({
+            type: 'UPDATE_VALUE',
+            payload: 'Bye Hux!'
+          })
+        }, [])
+        childRenders += 1
+        renders.push(value)
+        return <span />
+      })
+      rtl.render(<Parent />)
+      expect(childRenders).toBe(2)
+      expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
+    })
+    it('should call render on async dispatch', () => {
+      const renders = [];
+      Child = memo(() => {
+        childStore = useStore(STORE_NAME)
+        const { value, loading } = childStore.state
+        childStore.useSubscribe({ value })
+
+        const action = () => childStore.dispatch({
+          type: 'UPDATE_VALUE',
+          payload: 'Bye Hux!'
+        })
+
+        childRenders += 1
+        renders.push(value)
+        return <button onClick={action}>Button</button>
+      })
+      rtl.render(<Parent />)
+      expect(childRenders).toBe(1)
+      expect(renders).toEqual(['Hello Hux!'])
+      rtl.fireEvent.click(rtl.screen.getByText('Button'))
+      expect(childRenders).toBe(2)
+      expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
     })
   })
   describe('share', () => {
