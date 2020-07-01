@@ -61,6 +61,7 @@ function createStore(storeName, reducer, initialState, options = { cache: true }
   const [state, dispatch] = useReducer(reducer, options.cache && dock[storeName]?.state || initialState);
   if (dock[storeName]) {
     dock[storeName].state = state;
+    dock[storeName].dispatch = dispatch;
   }
   if (!dock[storeName]) {
     dock[storeName] = {
