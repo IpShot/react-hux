@@ -86,11 +86,11 @@ function getStore(storeName) {
   return dock[storeName];
 }
 
-export function useNewStore(storeName, reducer, initialState) {
+export function useNewStore(storeName, reducer, initialState, options) {
   if (!storeName || !reducer || !initialState) {
     throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
   }
-  dock[storeName] = createStore(storeName, reducer, initialState);
+  dock[storeName] = createStore(storeName, reducer, initialState, options);
   return dock[storeName];
 }
 
