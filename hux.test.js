@@ -4,18 +4,21 @@ import * as rtl from '@testing-library/react';
 import { useNewStore, useStore } from './hux';
 import shallowEqual from './shallowEqual';
 
-let counter = 1
-const genStoreName = () => counter++
+let counter = 0
+const genStoreName = () => counter += 1
 
 describe('Hux', () => {
   let initialState
   let reducer
   let STORE_NAME
-  let renders
+  let store
+  let childStore
+  let parentRenders
+  let childRenders
+  let Parent
+  let Child
 
   beforeEach(() => {
-    STORE_NAME = genStoreName()
-    renders = []
     initialState = {
       value: 'Hello Hux!',
       loading: false,
@@ -35,6 +38,26 @@ describe('Hux', () => {
         default:
           return state
       }
+    }
+    STORE_NAME = genStoreName()
+    store = undefined
+    parentRenders = 0
+    childRenders = 0
+    Child = () => {
+      childStore = useStore(STORE_NAME)
+      const { value, loading } = childStore.state
+      childStore.useSubscribe({ loading })
+      childRenders += 1
+      return <span />
+    }
+    Parent = () => {
+      store = useNewStore(STORE_NAME, reducer, initialState)
+      parentRenders += 1
+      return (
+        <div>
+          <Child />
+        </div>
+      )
     }
   })
 
@@ -61,6 +84,21 @@ describe('Hux', () => {
           payload: 'Bye Hux!'
         })
       })
+      expect(result.current.state.value).toBe('Bye Hux!')
+    })
+    it('should return the latest state on rerender', () => {
+      const { result, rerender } = renderHook(
+        () => useNewStore(STORE_NAME, reducer, initialState)
+      )
+      expect(result.current.state.value).toBe('Hello Hux!')
+      act(() => {
+        result.current.dispatch({
+          type: 'UPDATE_VALUE',
+          payload: 'Bye Hux!'
+        })
+      })
+      expect(result.current.state.value).toBe('Bye Hux!')
+      rerender()
       expect(result.current.state.value).toBe('Bye Hux!')
     })
     it('should return the latest state on multiple dispatches', () => {
@@ -106,28 +144,25 @@ describe('Hux', () => {
       })
       expect(result.current.state.value).toBe('Last Hux!')
     })
-    it('should call render on dispatch regardless useSubscribe', () => {
-      let store
+    it('should call render on dispatch regardless subscribe', () => {
       const Comp = () => {
         store = useNewStore(STORE_NAME, reducer, initialState)
         const { value, loading } = store.state
         store.useSubscribe({ loading })
-        renders.push(value)
+        parentRenders += 1
         return <span />
       }
 
+      expect(parentRenders).toBe(0)
       rtl.render(<Comp />)
-      expect(renders).toEqual(['Hello Hux!'])
-      rtl.act(() => {
-        store.dispatch({
-          type: 'UPDATE_VALUE',
-          payload: 'Bye Hux!'
-        })
-      })
-      expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
+      expect(parentRenders).toBe(1)
+      rtl.act(() => store.dispatch({
+        type: 'UPDATE_VALUE',
+        payload: 'Last Hux!'
+      }))
+      expect(parentRenders).toBe(2)
     })
     it('should return cached state if component unmounted and mounted again', () => {
-      let store
       let oldState
       const Comp = () => {
         store = useNewStore(STORE_NAME, reducer, initialState)
@@ -149,7 +184,6 @@ describe('Hux', () => {
       expect(store.state.value).toBe('Bye Hux!')
     })
     it('should return initial state if component unmounted and mounted again and cache option set to false', () => {
-      let store
       let oldState
       const Comp = () => {
         store = useNewStore(STORE_NAME, reducer, initialState, { cache: false })
@@ -202,15 +236,57 @@ describe('Hux', () => {
     })
   })
   describe('useStore', () => {
-    it('should return state equal to state returned by useNewStore in parent', () => {
-      const { result } = renderHook(
-        () => useNewStore(STORE_NAME, reducer, initialState)
-      )
-      expect(result.current.state).toEqual(initialState)
+    it('should return state equal to state returned by useNewStore in parent on initial render', () => {
+      rtl.render(<Parent />)
+      expect(childStore.state).toEqual(store.state)
+    })
+    it('should return state equal to state returned by useNewStore on dispatch regardless subscribe if the component not memoized', () => {
+      rtl.render(<Parent />)
+      expect(store.state.value).toBe('Hello Hux!')
+      expect(childStore.state.value).toBe('Hello Hux!')
+      rtl.act(() => {
+        store.dispatch({
+          type: 'UPDATE_VALUE',
+          payload: 'Bye Hux!'
+        })
+      })
+      expect(store.state.value).toBe('Bye Hux!')
+      expect(childStore.state.value).toBe('Bye Hux!')
     })
   })
   describe('useSubscribe', () => {
-
+    it('should call render of memoized component on dispatch value subscribed to', () => {
+      expect(parentRenders).toBe(0)
+      expect(childRenders).toBe(0)
+      Child = memo(Child)
+      rtl.render(<Parent />)
+      expect(parentRenders).toBe(1)
+      expect(childRenders).toBe(1)
+      rtl.act(() => {
+        store.dispatch({
+          type: 'UPDATE_LOADING',
+          payload: true
+        })
+      })
+      expect(parentRenders).toBe(2)
+      expect(childRenders).toBe(2)
+    })
+    it('should not call render of memoized component on dispatch value not subscribed to', () => {
+      expect(parentRenders).toBe(0)
+      expect(childRenders).toBe(0)
+      Child = memo(Child)
+      rtl.render(<Parent />)
+      expect(parentRenders).toBe(1)
+      expect(childRenders).toBe(1)
+      rtl.act(() => {
+        store.dispatch({
+          type: 'UPDATE_VALUE',
+          payload: 'Bye Hux!'
+        })
+      })
+      expect(parentRenders).toBe(2)
+      expect(childRenders).toBe(1)
+    })
   })
   describe('share', () => {
 
