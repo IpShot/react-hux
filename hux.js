@@ -95,8 +95,9 @@ export function useNewStore(storeName, reducer, initialState, options) {
 }
 
 export function useStore(storeName) {
+  if (!storeName) throw new Error(`You have to specify a store name argument.`);
   if (!dock[storeName]) {
-    throw new Error(`The store "${storeName}" doesn't exist. You have to create it with useNewHux(...) before trying to use.`);
+    throw new Error(`The store "${storeName}" doesn't exist. You have to create it with useNewStore(...) before use.`);
   }
   return getStore(storeName);
 }
