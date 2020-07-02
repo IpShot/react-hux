@@ -7,12 +7,14 @@ const AddTodo = () => {
   const [input, setInput] = useState('');
 
   function handleAddTodo() {
-    actions.addTodo(input);
-    setInput('');
+    if (input) {
+      actions.addTodo(input);
+      setInput('');
+    }
   }
   return (
     <div>
-      <input onChange={e => setInput(e.target.value)} />
+      <input value={input} onChange={e => setInput(e.target.value)} />
       <button className="add-todo" onClick={handleAddTodo}>
         Add Todo
       </button>
