@@ -83,7 +83,10 @@ function useCreateStore(storeName, reducer, initialState, options = { cache: tru
     }
   });
   useEffect(() => {
-    return () => delete dock[storeName].shared;
+    return () => {
+      delete dock[storeName].actions;
+      delete dock[storeName].shared;
+    }
   }, []);
   return dock[storeName];
 }
