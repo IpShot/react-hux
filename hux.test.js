@@ -397,20 +397,6 @@ describe('Hux', () => {
         renders.push(value)
         return <span />
       })
-      // Parent = () => {
-      //   store = useNewStore(STORE_NAME, reducer, initialState)
-      //   useLayoutEffect(() => {
-      //     childStore.dispatch({
-      //       type: 'UPDATE_VALUE',
-      //       payload: 'Hello Hux!'
-      //     })
-      //   }, [])
-      //   return (
-      //     <div>
-      //       <Child />
-      //     </div>
-      //   )
-      // }
       rtl.render(<Parent />)
       expect(childRenders).toBe(2)
       expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
