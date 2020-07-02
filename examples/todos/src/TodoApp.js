@@ -57,7 +57,7 @@ const reducer = function(state, action) {
 let nextTodoId = 0;
 
 export default function TodoApp() {
-  const { share, dispatch } = useNewStore(TODO_STORE, reducer, initialState);
+  const { dispatch, share } = useNewStore(TODO_STORE, reducer, initialState);
   const actions = React.useMemo(() => ({
     addTodo(content) {
       dispatch({

@@ -3,11 +3,11 @@ import { useStore } from "../hux";
 import { TODO_STORE } from "../constants";
 
 const AddTodo = () => {
-  const { shared } = useStore(TODO_STORE);
+  const { actions } = useStore(TODO_STORE);
   const [input, setInput] = useState('');
 
   function handleAddTodo() {
-    shared.actions.addTodo(input);
+    actions.addTodo(input);
     setInput('');
   }
   return (

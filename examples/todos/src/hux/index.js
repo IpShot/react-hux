@@ -50,6 +50,9 @@ function subscribe(storeName) {
 
 function share(storeName) {
   return (data) => {
+    if (data.actions) {
+      dock[storeName].actions = data.actions;
+    }
     dock[storeName].shared = {
       ...dock[storeName].shared,
       ...data,

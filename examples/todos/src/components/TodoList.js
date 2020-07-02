@@ -14,7 +14,7 @@ function getFilteredTodos(todos, filter) {
 }
 
 const TodoList = React.memo(() => {
-  const { state, shared, useSubscribe } = useStore(TODO_STORE)
+  const { state, actions, useSubscribe } = useStore(TODO_STORE)
   const { todos, filter } = state;
   const filteredTodos = getFilteredTodos(todos, filter);
 
@@ -27,7 +27,7 @@ const TodoList = React.memo(() => {
             <Todo
               key={`todo-${todo.id}`}
               todo={todo}
-              toggleTodo={shared.actions.toggleTodo}
+              toggleTodo={actions.toggleTodo}
             />
           )
         : "No todos, yay!"}

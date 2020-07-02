@@ -4,7 +4,7 @@ import { useStore } from "../hux";
 import { TODO_STORE, VISIBILITY_FILTERS } from "../constants";
 
 const VisibilityFilters = () => {
-  const { state, shared } = useStore(TODO_STORE);
+  const { state, actions } = useStore(TODO_STORE);
   return (
     <div className="visibility-filters">
       {Object.keys(VISIBILITY_FILTERS).map(filterKey => {
@@ -16,7 +16,7 @@ const VisibilityFilters = () => {
               "filter",
               currentFilter === state.filter && "filter--active"
             )}
-            onClick={() => shared.actions.setFilter(currentFilter)}
+            onClick={() => actions.setFilter(currentFilter)}
           >
             {currentFilter}
           </span>
