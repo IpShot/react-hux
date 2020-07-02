@@ -79,6 +79,9 @@ function createStore(storeName, reducer, initialState, options = { cache: true }
       runSubscriptions(subscriptions[storeName]);
     }
   });
+  useEffect(() => {
+    return () => delete dock[storeName].shared;
+  }, []);
   return dock[storeName];
 }
 
