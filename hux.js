@@ -52,7 +52,6 @@ function share(storeName) {
   return (data) => {
     if (data.actions) {
       dock[storeName].actions = data.actions;
-      delete data.actions;
     }
     dock[storeName].shared = {
       ...dock[storeName].shared,
