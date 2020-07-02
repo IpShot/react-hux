@@ -57,7 +57,7 @@ function share(storeName) {
   }
 }
 
-function createStore(storeName, reducer, initialState, options = { cache: true }) {
+function useCreateStore(storeName, reducer, initialState, options = { cache: true }) {
   const [state, dispatch] = useReducer(reducer, options.cache && dock[storeName]?.state || initialState);
   if (dock[storeName]) {
     dock[storeName].state = state;
@@ -93,7 +93,7 @@ export function useNewStore(storeName, reducer, initialState, options) {
   if (!storeName || !reducer || !initialState) {
     throw new Error('You have to specify all 3 arguments: (storeName, reducer, initialState).');
   }
-  dock[storeName] = createStore(storeName, reducer, initialState, options);
+  dock[storeName] = useCreateStore(storeName, reducer, initialState, options);
   return dock[storeName];
 }
 
