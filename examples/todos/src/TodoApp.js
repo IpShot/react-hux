@@ -57,7 +57,7 @@ const reducer = function(state, action) {
 let nextTodoId = 0;
 
 export default function TodoApp() {
-  const { dispatch, share } = useNewStore(TODO_STORE, reducer, initialState);
+  const { state, dispatch, share } = useNewStore(TODO_STORE, reducer, initialState);
   const actions = React.useMemo(() => ({
     addTodo(content) {
       dispatch({
@@ -86,7 +86,7 @@ export default function TodoApp() {
 
   return (
     <div className="todo-app">
-      <h1>Todo List</h1>
+      <h1>Todo List ({Object.keys(state.todos).length})</h1>
       <AddTodo />
       <TodoList />
       <VisibilityFilters />
