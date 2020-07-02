@@ -144,7 +144,7 @@ describe('Hux', () => {
       })
       expect(result.current.state.value).toBe('Last Hux!')
     })
-    it('should call render on dispatch regardless subscribe', () => {
+    it('should always call render on dispatch regardless subscribe', () => {
       const Comp = () => {
         store = useNewStore(STORE_NAME, reducer, initialState)
         const { value, loading } = store.state
@@ -161,6 +161,67 @@ describe('Hux', () => {
         payload: 'Last Hux!'
       }))
       expect(parentRenders).toBe(2)
+    })
+    it('should always run subscriptions in order from ancestor to descendant on dispatch ', () => {
+      let subChildStore
+      let subChildRenders = 0
+      let renders = []
+      const SubChild = memo(() => {
+        subChildStore = useStore(STORE_NAME)
+        const { value, loading } = subChildStore.state
+        subChildStore.useSubscribe({ value })
+        if (subChildRenders > 0) {
+          renders.push('SubChild')
+        }
+        subChildRenders += 1
+        return <div />
+      })
+      Child = memo(() => {
+        childStore = useStore(STORE_NAME)
+        const { value, loading } = childStore.state
+        childStore.useSubscribe({ value, loading })
+        if (childRenders > 0) {
+          renders.push('Child')
+        }
+        childRenders += 1
+        return (
+          <div>
+            <SubChild />
+          </div>
+        )
+      })
+      Parent = () => {
+        store = useNewStore(STORE_NAME, reducer, initialState)
+        if (childRenders > 0) {
+          renders.push('Parent')
+        }
+        parentRenders += 1
+        return (
+          <div>
+            <Child />
+          </div>
+        )
+      }
+
+      rtl.render(<Parent />)
+      expect(renders).toEqual([])
+      rtl.act(() => store.dispatch({
+        type: 'UPDATE_VALUE',
+        payload: 'First Hux!'
+      }))
+      expect(renders).toEqual(['Parent', 'Child', 'SubChild'])
+      renders = []
+      rtl.act(() => childStore.dispatch({
+        type: 'UPDATE_LOADING',
+        payload: true
+      }))
+      expect(renders).toEqual(['Parent', 'Child'])
+      renders = []
+      rtl.act(() => subChildStore.dispatch({
+        type: 'UPDATE_VALUE',
+        payload: 'And Last Hux!'
+      }))
+      expect(renders).toEqual(['Parent', 'Child', 'SubChild'])
     })
     it('should return cached state if component unmounted and mounted again', () => {
       let oldState
@@ -336,6 +397,20 @@ describe('Hux', () => {
         renders.push(value)
         return <span />
       })
+      // Parent = () => {
+      //   store = useNewStore(STORE_NAME, reducer, initialState)
+      //   useLayoutEffect(() => {
+      //     childStore.dispatch({
+      //       type: 'UPDATE_VALUE',
+      //       payload: 'Hello Hux!'
+      //     })
+      //   }, [])
+      //   return (
+      //     <div>
+      //       <Child />
+      //     </div>
+      //   )
+      // }
       rtl.render(<Parent />)
       expect(childRenders).toBe(2)
       expect(renders).toEqual(['Hello Hux!', 'Bye Hux!'])
@@ -365,6 +440,59 @@ describe('Hux', () => {
     })
   })
   describe('share', () => {
-
+    it('should share data to another components using the same store', () => {
+      let subChildStore
+      const SubChild = memo(() => {
+        subChildStore = useStore(STORE_NAME)
+        const { value, loading } = subChildStore.state
+        subChildStore.useSubscribe({ value })
+        if (loading) {
+          subChildStore.share({ subData: 'subData' })
+        }
+        return <div />
+      })
+      Child = memo(() => {
+        childStore = useStore(STORE_NAME)
+        const { value, loading } = childStore.state
+        childStore.useSubscribe({ value, loading })
+        if (loading) {
+          childStore.share({ data: 'data' })
+        }
+        return (
+          <div>
+            <SubChild />
+          </div>
+        )
+      })
+      rtl.render(<Parent />)
+      rtl.act(() => {
+        childStore.dispatch({
+          type: 'UPDATE_LOADING',
+          payload: true
+        })
+      })
+      expect(store.shared).toEqual({ data: 'data' })
+      expect(subChildStore.shared).toEqual({ data: 'data' })
+      rtl.act(() => {
+        subChildStore.dispatch({
+          type: 'UPDATE_VALUE',
+          payload: 'Hux!'
+        })
+      })
+      expect(store.shared).toEqual({ data: 'data', subData: 'subData' })
+      expect(childStore.shared).toEqual({ data: 'data', subData: 'subData' })
+      expect(subChildStore.shared).toEqual({ data: 'data', subData: 'subData' })
+    })
+    it('should remove shared on store director component unmount', () => {
+      Child = () => {
+        childStore = useStore(STORE_NAME)
+        childStore.share({ data: 'data' })
+        return <div/>
+      }
+      const { unmount } = rtl.render(<Parent />)
+      expect(store.shared).toEqual({ data: 'data' })
+      unmount()
+      expect(store.shared).toBe(undefined)
+    })
   })
 })
