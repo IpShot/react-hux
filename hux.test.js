@@ -469,16 +469,19 @@ describe('Hux', () => {
       expect(childStore.shared).toEqual({ data: 'data', subData: 'subData' })
       expect(subChildStore.shared).toEqual({ data: 'data', subData: 'subData' })
     })
-    it('should remove shared on store director component unmount', () => {
+    it('should remove actions and shared on store director component unmount', () => {
       Child = () => {
         childStore = useStore(STORE_NAME)
         childStore.share({ data: 'data' })
+        childStore.share({ actions: 'actions' })
         return <div/>
       }
       const { unmount } = rtl.render(<Parent />)
-      expect(store.shared).toEqual({ data: 'data' })
+      expect(store.shared).toEqual({ data: 'data', actions: 'actions' })
+      expect(store.actions).toBe('actions')
       unmount()
       expect(store.shared).toBe(undefined)
+      expect(store.actions).toBe(undefined)
     })
   })
 })
