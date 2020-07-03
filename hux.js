@@ -73,10 +73,8 @@ function useCreateStore(storeName, reducer, initialState, options = { cache: tru
       share: share(storeName),
       useSubscribe: subscribe(storeName),
     }
-  }
-  useMemo(() => {
     subscriptions[storeName] = {};
-  }, []);
+  }
   useEffect(() => {
     if (dock[storeName]) {
       runSubscriptions(subscriptions[storeName]);
