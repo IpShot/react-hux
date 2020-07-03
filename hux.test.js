@@ -426,14 +426,14 @@ describe('Hux', () => {
     })
   })
   describe('share', () => {
-    it('should share data to another components using the same store', () => {
+    it('should share actions and another data to another components using the same store', () => {
       let subChildStore
       const SubChild = memo(() => {
         subChildStore = useStore(STORE_NAME)
         const { value, loading } = subChildStore.state
         subChildStore.useSubscribe({ value })
         if (loading) {
-          subChildStore.share({ subData: 'subData' })
+          subChildStore.share({ subData: 'subData', actions: 'actions' })
         }
         return <div />
       })
@@ -458,16 +458,23 @@ describe('Hux', () => {
         })
       })
       expect(store.shared).toEqual({ data: 'data' })
+      expect(childStore.shared).toEqual({ data: 'data' })
       expect(subChildStore.shared).toEqual({ data: 'data' })
+      expect(store.actions).toBe(undefined)
+      expect(childStore.actions).toBe(undefined)
+      expect(subChildStore.actions).toBe(undefined)
       rtl.act(() => {
         subChildStore.dispatch({
           type: 'UPDATE_VALUE',
           payload: 'Hux!'
         })
       })
-      expect(store.shared).toEqual({ data: 'data', subData: 'subData' })
-      expect(childStore.shared).toEqual({ data: 'data', subData: 'subData' })
-      expect(subChildStore.shared).toEqual({ data: 'data', subData: 'subData' })
+      expect(store.shared).toEqual({ data: 'data', subData: 'subData', actions: 'actions' })
+      expect(childStore.shared).toEqual({ data: 'data', subData: 'subData', actions: 'actions' })
+      expect(subChildStore.shared).toEqual({ data: 'data', subData: 'subData', actions: 'actions' })
+      expect(store.actions).toBe('actions')
+      expect(childStore.actions).toBe('actions')
+      expect(subChildStore.actions).toBe('actions')
     })
     it('should remove actions and shared on store director component unmount', () => {
       Child = () => {
