@@ -1,4 +1,4 @@
-import { useReducer, useRef, useMemo, useEffect } from 'react';
+import { useReducer, useRef, useEffect } from 'react';
 import shallowEqual from './shallowEqual';
 
 let counter = 0;
